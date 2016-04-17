@@ -9,6 +9,7 @@ library(ggplot2)
 library(dplyr)
 library(foreign)
 library(gridExtra)
+library()
 
 primary <- read.csv("D:/primary_results.csv", stringsAsFactors = FALSE)
 census <- read.dta("relcensus.dta", convert.factors = FALSE)
@@ -60,6 +61,9 @@ midwest <- subset(trump, trump$state == "Illinois" | trump$state == "Iowa" | tru
 
 south <- subset(trump, trump$state == "Alabama" | trump$state == "Arkansas" | trump$state == "Florida" | trump$state == "Georgia" | trump$state == "Kentucky" | trump$state == "Louisiana" | trump$state == "Mississippi" | trump$state == "Tennessee" | trump$state == "Texas" | trump$state == "South Carolina")
 
+west <- subset(trump, trump$state == "Arizona" | trump$state == "Nevada" | trump$state == "Utah" | trump$state == "Idaho")
+
+
 g1 <- ggplot(midwest, aes(x=fraction_votes, y=evanrate))+
 my_theme()+
 geom_point(shape=1) +
@@ -77,6 +81,16 @@ labs(title= "", x="Trump Vote Share", y="Evangelical Adherence Rate")+
 ggtitle("Southern States")+
 theme(plot.title = element_text(size = 16, face = "bold", colour = "black", vjust = 0.5, hjust=0.5)) +  theme(text=element_text(size=16, family="Georgia"))
 
-grid.arrange(g1, g2, ncol = 2)
+g3 <- ggplot(west, aes(x=fraction_votes, y=evanrate))+
+    my_theme()+
+    geom_point(shape=1) +
+    geom_smooth(method=lm)+
+    labs(title= "", x="Trump Vote Share", y="Evangelical Adherence Rate")+
+    ggtitle("Western States")+
+    theme(plot.title = element_text(size = 16, face = "bold", colour = "black", vjust = 0.5, hjust=0.5)) +  theme(text=element_text(size=16, family="Georgia"))
+
+
+
+grid.arrange(g1, g2, g3, ncol = 3)
 
 
