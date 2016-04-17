@@ -63,6 +63,7 @@ south <- subset(trump, trump$state == "Alabama" | trump$state == "Arkansas" | tr
 
 west <- subset(trump, trump$state == "Arizona" | trump$state == "Nevada" | trump$state == "Utah" | trump$state == "Idaho")
 
+east <- subset(trump, trump$state == "Massachusetts" | trump$state == "New Hampshire" | trump$state == "Vermont" | trump$state == "Virginia")
 
 g1 <- ggplot(midwest, aes(x=fraction_votes, y=evanrate))+
 my_theme()+
@@ -90,7 +91,14 @@ g3 <- ggplot(west, aes(x=fraction_votes, y=evanrate))+
     theme(plot.title = element_text(size = 16, face = "bold", colour = "black", vjust = 0.5, hjust=0.5)) +  theme(text=element_text(size=16, family="Georgia"))
 
 
+g4 <- ggplot(east, aes(x=fraction_votes, y=evanrate))+
+my_theme()+
+geom_point(shape=1) +
+geom_smooth(method=lm)+
+labs(title= "", x="Trump Vote Share", y="Evangelical Adherence Rate")+
+ggtitle("Western States")+
+theme(plot.title = element_text(size = 16, face = "bold", colour = "black", vjust = 0.5, hjust=0.5)) +  theme(text=element_text(size=16, family="Georgia"))
 
-grid.arrange(g1, g2, g3, ncol = 3)
+
 
 
