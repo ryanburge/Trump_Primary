@@ -99,6 +99,6 @@ labs(title= "", x="Trump Vote Share", y="Evangelical Adherence Rate")+
 ggtitle("Western States")+
 theme(plot.title = element_text(size = 16, face = "bold", colour = "black", vjust = 0.5, hjust=0.5)) +  theme(text=element_text(size=16, family="Georgia"))
 
-
+grid.arrange(g1, g2, ncol=2)
 
 
