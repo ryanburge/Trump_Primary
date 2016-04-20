@@ -1,0 +1,129 @@
+---
+title: "Trump and Evangelicals"
+author: "Ryan Burge"
+date: "April 20, 2016"
+output: html_document
+---
+
+
+
+```{r message=FALSE, warning=FALSE}
+library(ggplot2)
+library(dplyr)
+library(foreign)
+library(gridExtra)
+library(RColorBrewer)
+```
+I want to take a deeper dive into how well Trump does with evangelical Protestants. Unfortunately, there isn't a lot of publicly available data at the individual level. However, I have been able to cobble together a few different sources to find some county level data on Trump. [Kaggle](https://www.kaggle.com/benhamner/2016-us-election) has posted election results from 25 states. And then a great resource, called the ARDA has [hosted](http://www.thearda.com/Archive/Files/Descriptions/RCMSCY10.asp) a dataset on county level religious adherence. I'm going to load both, then merge them. Finally, I will subset out just the Trump counties. 
+
+```{r message=FALSE, warning=FALSE}
+primary <- read.csv("D:/primary_results.csv", stringsAsFactors = FALSE)
+census <- read.dta("D:/relcensus.dta", convert.factors = FALSE)
+merge <- merge(census, primary, by=c("fips"))
+trump <- subset(merge, candidate == "Donald Trump")
+```
+
+```{r message=FALSE, warning=FALSE, echo = FALSE}
+my_theme <- function() {
+# Define colors for the chart
+palette <- brewer.pal("Greys", n=9)
+color.background = palette[2]
+color.grid.major = palette[4]
+color.panel = palette[3]
+color.axis.text = palette[9]
+color.axis.title = palette[9]
+color.title = palette[9]
+# Create basic construction of chart
+theme_bw(base_size=9, base_family="Georgia") +
+# Set the entire chart region to a light gray color
+theme(panel.background=element_rect(fill=color.panel, color=color.background)) +
+theme(plot.background=element_rect(fill=color.background, color=color.background)) +
+theme(panel.border=element_rect(color=color.background)) +
+# Format grid
+theme(panel.grid.major=element_line(color=color.grid.major,size=.25)) +
+theme(panel.grid.minor=element_blank()) +
+theme(axis.ticks=element_blank()) +
+# Format legend
+theme(legend.position="right") +
+theme(legend.background = element_rect(fill=color.panel)) +
+theme(legend.text = element_text(size=10,color=color.axis.title)) +
+# Format title and axes labels these and tick marks
+theme(plot.title=element_text(color=color.title, size=20, vjust=0.5, hjust=0, face="bold")) +
+theme(axis.text.x=element_text(size=10,color=color.axis.text)) +
+theme(axis.text.y=element_text(size=10,color=color.axis.text)) +
+theme(axis.title.x=element_text(size=12,color=color.axis.title, vjust=-1, face="italic")) +
+theme(axis.title.y=element_text(size=12,color=color.axis.title, vjust=1.8, face="italic")) +
+# Plot margins
+theme(plot.margin = unit(c(.5, .5, .5, .5), "cm"))
+}
+```
+What I'm going to do is just run a scatterplot of Trump's vote share on the X and the evangelical adherence rate on the Y. I am also going to plot a regression line with CIs to see if there is a relationship. 
+
+```{r message=FALSE, warning=FALSE}
+ggplot(trump, aes(x=fraction_votes, y=evanrate))+
+my_theme()+
+geom_point(shape=1) +
+geom_smooth(method=lm)+
+labs(title= "", x="Trump Vote Share", y="Evangelical Adherence Rate")+
+ggtitle(expression(atop(bold("Trump and Evangelicals"), atop(italic("Association between Trump Vote Share and Evangelical Adherence"),""))))+
+theme(plot.title = element_text(size = 16, face = "bold", colour = "black", vjust = 0.5, hjust=0.5))
+```
+
+So the relationship is positive but very, very weak. That's sort of disappointing. Let's think about how to slice this a few different ways. I think a good approach is to break it down by regions of the country. That's what I'm going to do. 
+
+```{r message=FALSE, warning=FALSE}
+midwest <- subset(trump, trump$state == "Illinois" | trump$state == "Iowa" | trump$state == "Michigan" | trump$state == "Missouri" | trump$state == "Ohio")
+
+south <- subset(trump, trump$state == "Alabama" | trump$state == "Arkansas" | trump$state == "Florida" | trump$state == "Georgia" | trump$state == "Kentucky" | trump$state == "Louisiana" | trump$state == "Mississippi" | trump$state == "Tennessee" | trump$state == "Texas" | trump$state == "South Carolina")
+
+west <- subset(trump, trump$state == "Arizona" | trump$state == "Nevada" | trump$state == "Utah" | trump$state == "Idaho")
+
+east <- subset(trump, trump$state == "Massachusetts" | trump$state == "New Hampshire" | trump$state == "Vermont" | trump$state == "Virginia")
+```
+
+So, we've got our four regions now. Some of the states are sort of in-between. I'm thinking about places like Virginia and Oklahoma. I did the best I could. 
+
+```{r message=FALSE, warning=FALSE, echo = FALSE}
+g1 <- ggplot(midwest, aes(x=fraction_votes, y=evanrate))+
+my_theme()+
+geom_point(shape=1) +
+geom_smooth(method=lm)+
+labs(title= "", x="Trump Vote Share", y="Evangelical Adherence Rate")+
+ggtitle("Midwest States")+
+theme(plot.title = element_text(size = 16, face = "bold", colour = "black", vjust = 0.5, hjust=0.5)) +  theme(text=element_text(size=16, family="Georgia"))
+
+g2 <- ggplot(south, aes(x=fraction_votes, y=evanrate))+
+my_theme()+
+geom_point(shape=1) +
+geom_smooth(method=lm)+
+labs(title= "", x="Trump Vote Share", y="Evangelical Adherence Rate")+
+ggtitle("Southern States")+
+theme(plot.title = element_text(size = 16, face = "bold", colour = "black", vjust = 0.5, hjust=0.5)) +  theme(text=element_text(size=16, family="Georgia"))
+
+g3 <- ggplot(west, aes(x=fraction_votes, y=evanrate))+
+    my_theme()+
+    geom_point(shape=1) +
+    geom_smooth(method=lm)+
+    labs(title= "", x="Trump Vote Share", y="Evangelical Adherence Rate")+
+    ggtitle("Western States")+
+    theme(plot.title = element_text(size = 16, face = "bold", colour = "black", vjust = 0.5, hjust=0.5)) +  theme(text=element_text(size=16, family="Georgia"))
+
+
+g4 <- ggplot(east, aes(x=fraction_votes, y=evanrate))+
+my_theme()+
+geom_point(shape=1) +
+geom_smooth(method=lm)+
+labs(title= "", x="Trump Vote Share", y="Evangelical Adherence Rate")+
+ggtitle("Eastern States")+
+theme(plot.title = element_text(size = 16, face = "bold", colour = "black", vjust = 0.5, hjust=0.5)) +  theme(text=element_text(size=16, family="Georgia"))
+```
+```{r message=FALSE, warning=FALSE}
+g1
+g2
+g3
+g4
+```
+
+It's interesting that Trump does not better in Southern counties that are more evangelical. Maybe conservatism is so widespread that evangelicalism doesn't matter in that situation. On the other hand, in the other regions there is a positive relationship between evangelicalism and Trump's vote share. I would say that we can say that the relationship is strong in the Midwest because we have a large number of counties in our sample. In the West and East we don't have a huge sample. 
+
+Again, this is county level data so we can't say how individuals vote for Trump, but this is a good broad view.  
